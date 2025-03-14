@@ -4,16 +4,19 @@
       <textarea 
         v-model="inputJson" 
         placeholder="请输入 JSON 字符串"
-        @input="formatJson"
+        class="json-input"
       ></textarea>
     </div>
+
     <div class="button-group">
       <button @click="formatJson">格式化</button>
-      <button @click="minifyJson">压缩</button>
-      <button @click="copyResult">复制结果</button>
+      <button @click="compressJson">压缩</button>
+      <button @click="clearResult">复制结果</button>
     </div>
-    <pre class="output-area" v-if="formattedJson"><code>{{ formattedJson }}</code></pre>
-    <p class="error" v-if="error">{{ error }}</p>
+
+    <div class="output-area">
+      <pre class="json-output">{{ formattedJson }}</pre>
+    </div>
   </div>
 </template>
 
@@ -22,43 +25,31 @@ export default {
   data() {
     return {
       inputJson: '',
-      formattedJson: '',
-      error: ''
+      formattedJson: ''
     }
   },
   methods: {
     formatJson() {
       try {
-        if (!this.inputJson) {
-          this.formattedJson = ''
-          this.error = ''
-          return
-        }
         const obj = JSON.parse(this.inputJson)
         this.formattedJson = JSON.stringify(obj, null, 2)
-        this.error = ''
       } catch (e) {
-        this.error = '无效的 JSON 格式'
-        this.formattedJson = ''
+        this.formattedJson = '无效的 JSON 格式'
       }
     },
-    minifyJson() {
+    compressJson() {
       try {
-        if (!this.inputJson) return
         const obj = JSON.parse(this.inputJson)
         this.formattedJson = JSON.stringify(obj)
-        this.error = ''
       } catch (e) {
-        this.error = '无效的 JSON 格式'
-        this.formattedJson = ''
+        this.formattedJson = '无效的 JSON 格式'
       }
     },
-    async copyResult() {
-      if (!this.formattedJson) return
+    async clearResult() {
       try {
         await navigator.clipboard.writeText(this.formattedJson)
         alert('已复制到剪贴板')
-      } catch (e) {
+      } catch (err) {
         alert('复制失败')
       }
     }
@@ -68,50 +59,95 @@ export default {
 
 <style scoped>
 .formatter {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  display: grid;
+  grid-gap: 20px;
+  min-height: calc(100vh - 100px);
 }
 
-.input-area textarea {
+.input-area, .output-area {
   width: 100%;
-  height: 200px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: vertical;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.json-input {
+  width: 100%;
+  height: 300px;
+  padding: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 0.3s;
+}
+
+.json-input:focus {
+  border-color: #1a73e8;
+  outline: none;
 }
 
 .button-group {
-  margin: 15px 0;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 0;
 }
 
 button {
-  margin-right: 10px;
-  padding: 8px 16px;
-  background: #007bff;
+  padding: 12px 32px;
+  background: #1a73e8;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s;
 }
 
 button:hover {
-  background: #0056b3;
+  background: #1557b0;
+  transform: translateY(-1px);
 }
 
 .output-area {
-  background: white;
-  padding: 15px;
-  border-radius: 4px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 400px;
-  overflow-y: auto;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 300px;
+  border: 2px solid #e0e0e0;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
+.json-output {
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .formatter {
+    padding: 20px;
+  }
+
+  .button-group {
+    flex-direction: column;
+    padding: 10px 0;
+  }
+
+  button {
+    width: 100%;
+  }
 }
 </style>
