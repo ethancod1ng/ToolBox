@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/ToolBox/',  // 添加这行，ToolBox 是你的仓库名
   plugins: [
     vue(),
     vueDevTools(),
