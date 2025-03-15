@@ -206,65 +206,57 @@ export default {
   height: 100%;
   margin: 0;
   padding: 0;
-  background: white;
+  background: #f5f7fa;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: calc(100vh - 110px);
   position: relative;
 }
 
 .converter-header {
-  text-align: center;
-  padding: 20px 0;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.converter-header h1 {
-  color: #1a73e8;
-  margin-bottom: 8px;
-}
-
-.converter-header p {
-  color: #5f6368;
+  display: none;
 }
 
 .converter-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 16px;
   padding: 15px 0;
-  background-color: white;
+  background-color: transparent;
   flex-wrap: wrap;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 20px 15px 20px;
 }
 
 .main-btn {
-  padding: 12px 20px;
+  padding: 10px 16px;
   background: #1a73e8;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
   transition: all 0.3s;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  min-width: 120px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
   justify-content: center;
 }
 
 .main-btn:hover {
   background: #1557b0;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .main-btn:active {
   transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .converter-content {
@@ -272,7 +264,9 @@ export default {
   flex: 1;
   padding: 0 20px 20px 20px;
   gap: 20px;
-  background-color: white;
+  background-color: transparent;
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
 }
 
@@ -282,19 +276,19 @@ export default {
   display: flex;
   flex-direction: column;
   background: #fff;
-  border-radius: 8px;
+  border-radius: 4px;
   border: 1px solid #e0e0e0;
   overflow: hidden;
   min-height: 500px;
   width: 100%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 16px;
   background: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
   width: 100%;
@@ -302,7 +296,7 @@ export default {
 
 .panel-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   color: #202124;
 }
 
@@ -313,13 +307,13 @@ export default {
 }
 
 .action-btn {
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: #f1f3f4;
   color: #5f6368;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -332,7 +326,7 @@ export default {
 }
 
 .action-btn i {
-  font-size: 18px;
+  font-size: 16px;
   transition: all 0.2s;
 }
 
@@ -439,27 +433,8 @@ export default {
     min-height: 300px;
   }
 
-  .action-btn {
-    padding: 8px 10px;
-  }
-
-  .action-btn span {
-    display: none;
-  }
-
-  .action-btn i {
-    margin: 0;
-  }
-
   .converter-actions {
-    gap: 10px;
     padding: 10px;
-  }
-
-  .main-btn {
-    padding: 10px 16px;
-    font-size: 14px;
-    min-width: calc(50% - 10px);
   }
 }
 

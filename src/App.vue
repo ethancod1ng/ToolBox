@@ -4,66 +4,46 @@
     <header class="top-navbar">
       <div class="navbar-content">
         <div class="logo">
-          <h2 class="navbar-title">工具箱</h2>
+          <h2 class="navbar-title">{{ $t('nav.title') }}</h2>
         </div>
         <nav class="nav-links">
           <router-link to="/timestamp" class="nav-link">
             <i class="mdi mdi-clock-outline"></i>
-            <span>时间戳转换</span>
+            <span>{{ $t('nav.timestamp') }}</span>
           </router-link>
           <router-link to="/json" class="nav-link">
             <i class="mdi mdi-code-json"></i>
-            <span>JSON 格式化</span>
+            <span>{{ $t('nav.json') }}</span>
           </router-link>
           <router-link to="/base64" class="nav-link">
             <i class="mdi mdi-shuffle-variant"></i>
-            <span>Base64 转换</span>
+            <span>{{ $t('nav.base64') }}</span>
           </router-link>
         </nav>
+        <!-- 优化后的语言切换器 -->
+        <!-- 语言切换器部分 -->
+        <div class="language-switcher">
+          <button class="language-btn" @click="toggleLanguageMenu">
+            <i class="mdi mdi-web"></i>
+          </button>
+          <div class="language-menu" v-show="showLanguageMenu" @click="hideLanguageMenu">
+            <div class="language-option" 
+                 v-for="lang in languages" 
+                 :key="lang.code"
+                 @click="changeLocale(lang.code)"
+                 :class="{ active: currentLocale === lang.code }">
+              <span class="lang-text">{{ lang.native }}</span>
+              <i class="mdi mdi-check" v-if="currentLocale === lang.code"></i>
+            </div>
+          </div>
+        </div>
       </div>
     </header>
 
     <!-- 工具操作栏 - 根据当前路由动态显示不同工具的操作按钮 -->
     <div class="toolbar">
       <div class="toolbar-content">
-        <!-- 时间戳工具操作按钮 -->
-        <div class="tool-actions" v-if="$route.path === '/timestamp'">
-          <button class="tool-action-btn primary">
-            <i class="mdi mdi-clock-outline"></i> 当前时间
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-delete-outline"></i> 清空
-          </button>
-        </div>
 
-        <!-- JSON格式化工具操作按钮 -->
-        <div class="tool-actions" v-if="$route.path === '/json'">
-          <button class="tool-action-btn primary">
-            <i class="mdi mdi-code-json"></i> 格式化
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-arrow-collapse-horizontal"></i> 压缩
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-check-circle-outline"></i> 验证
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-sort-alphabetical-ascending"></i> 排序
-          </button>
-        </div>
-
-        <!-- Base64工具操作按钮 -->
-        <div class="tool-actions" v-if="$route.path === '/base64'">
-          <button class="tool-action-btn primary">
-            <i class="mdi mdi-encode"></i> 编码
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-decode"></i> 解码
-          </button>
-          <button class="tool-action-btn">
-            <i class="mdi mdi-delete-outline"></i> 清空
-          </button>
-        </div>
       </div>
     </div>
 
@@ -73,6 +53,41 @@
     </main>
   </div>
 </template>
+
+<script>
+import { useI18n } from 'vue-i18n'
+
+export default {
+  data() {
+    return {
+      showLanguageMenu: false,
+      languages: [
+        { code: 'zh-CN', native: '中文(简体)' },
+        { code: 'en-US', native: 'English' },
+        { code: 'ja-JP', native: '日本語' }
+      ]
+    }
+  },
+  setup() {
+    const { locale } = useI18n()
+    return {
+      currentLocale: locale
+    }
+  },
+  methods: {
+    toggleLanguageMenu() {
+      this.showLanguageMenu = !this.showLanguageMenu
+    },
+    hideLanguageMenu() {
+      this.showLanguageMenu = false
+    },
+    changeLocale(locale) {
+      this.currentLocale = locale
+      this.hideLanguageMenu()
+    }
+  }
+}
+</script>
 
 <style>
 /* 添加全局样式重置 */
@@ -404,43 +419,80 @@ body {
     margin-right: 0;
   }
 }
-</style>
 
-<script>
-export default {
-  mounted() {
-    // 监听路由变化，更新工具栏按钮
-    this.$watch(
-      () => this.$route.path,
-      () => {
-        // 路由变化时可以添加一些动画效果
-        const toolbar = document.querySelector('.toolbar');
-        if (toolbar) {
-          toolbar.classList.add('fade-in');
-          setTimeout(() => {
-            toolbar.classList.remove('fade-in');
-          }, 500);
-        }
-      }
-    );
-  }
-}
-</script>
-
-<style>
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* 语言切换器样式 */
+.language-switcher {
+  margin-left: auto;
+  position: relative;
 }
 
-.fade-in {
-  animation: fadeIn 0.3s ease forwards;
+.language-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;  /* 增加按钮大小 */
+  height: 42px; /* 增加按钮大小 */
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.language-btn i {
+  font-size: 24px; /* 增加图标大小 */
+}
+
+.language-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.language-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #1e1e1e;
+  border-radius: 8px;
+  min-width: 180px;
+  z-index: 1000;
+  padding: 8px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #ffffff;
+}
+
+.language-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.language-option.active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.lang-text {
+  font-size: 14px;
+}
+
+.language-option i {
+  font-size: 16px;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .language-menu {
+    position: fixed;
+    top: 60px;
+    right: 10px;
+    margin-top: 0;
+  }
 }
 </style>
