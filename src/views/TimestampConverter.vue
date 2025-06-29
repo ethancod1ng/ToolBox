@@ -8,21 +8,27 @@
         <div class="input-section">
           <div class="section-card">
             <div class="card-header">
-              <h2 class="card-title">{{ $t('timestamp.input') }}</h2>
+              <h2 class="card-title">时间戳转换</h2>
             </div>
             <div class="card-body">
               <!-- 时间戳输入 -->
               <div class="input-block">
-                <div class="input-label">{{ $t('timestamp.result.timestamp') }}：</div>
+                <div class="input-label">时间戳：</div>
                 <div class="input-control">
                   <div class="timestamp-input-wrapper">
-                    <input type="text" v-model="timestampInput" :placeholder="$t('timestamp.input')" @input="detectTimestampType"
-                      class="text-input">
+                    <input 
+                      type="text" 
+                      v-model="timestampInput" 
+                      placeholder="请输入时间戳" 
+                      @input="detectTimestampType"
+                      class="text-input"
+                      :class="{ 'error': timestampError }"
+                    >
                     <div class="timestamp-actions">
-                      <button class="action-button" @click="useCurrentTimestamp" :title="$t('timestamp.current')">
+                      <button class="action-button" @click="useCurrentTimestamp" title="使用当前时间">
                         <i class="mdi mdi-clock-outline"></i>
                       </button>
-                      <button class="action-button" @click="clearTimestamp" :title="$t('timestamp.clear')">
+                      <button class="action-button" @click="clearTimestamp" title="清空">
                         <i class="mdi mdi-close"></i>
                       </button>
                     </div>
@@ -31,44 +37,141 @@
                     <div class="timestamp-type-options">
                       <label class="radio-option">
                         <input type="radio" v-model="timestampType" value="seconds" @change="handleTimestampTypeChange">
-                        <span>{{ $t('timestamp.type.seconds') }}</span>
+                        <span>秒级</span>
                       </label>
                       <label class="radio-option">
                         <input type="radio" v-model="timestampType" value="milliseconds" @change="handleTimestampTypeChange">
-                        <span>{{ $t('timestamp.type.milliseconds') }}</span>
+                        <span>毫秒级</span>
                       </label>
                     </div>
+                  </div>
+                  <div v-if="timestampError" class="error-message">
+                    {{ timestampError }}
                   </div>
                 </div>
               </div>
 
               <!-- 日期时间输入区域 -->
               <div class="input-block">
-                <div class="input-label">{{ $t('timestamp.inputSection.date') }}</div>
-                <div class="datetime-input-wrapper">
-                  <input type="number" v-model="dateComponents.year" :placeholder="$t('timestamp.inputSection.year')" @input="updateDateFromComponents" class="date-input year">
-                  <span>-</span>
-                  <input type="number" v-model="dateComponents.month" :placeholder="$t('timestamp.inputSection.month')" @input="updateDateFromComponents" class="date-input month">
-                  <span>-</span>
-                  <input type="number" v-model="dateComponents.day" :placeholder="$t('timestamp.inputSection.day')" @input="updateDateFromComponents" class="date-input day">
-                  <span>|</span>
-                  <input type="number" v-model="dateComponents.hour" :placeholder="$t('timestamp.inputSection.hour')" @input="updateDateFromComponents" class="date-input hour">
-                  <span>:</span>
-                  <input type="number" v-model="dateComponents.minute" :placeholder="$t('timestamp.inputSection.minute')" @input="updateDateFromComponents" class="date-input minute">
-                  <span>:</span>
-                  <input type="number" v-model="dateComponents.second" :placeholder="$t('timestamp.inputSection.second')" @input="updateDateFromComponents" class="date-input second">
+                <div class="input-label">日期时间：</div>
+                <div class="datetime-input-container">
+                  <!-- 日期选择器 -->
+                  <div class="date-picker-section">
+                    <div class="date-inputs">
+                      <div class="date-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.year" 
+                          placeholder="年" 
+                          @input="updateDateFromComponents"
+                          class="date-input year"
+                          :class="{ 'error': dateErrors.year }"
+                          min="1970"
+                          max="2100"
+                        >
+                        <span class="date-separator">年</span>
+                      </div>
+                      <div class="date-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.month" 
+                          placeholder="月" 
+                          @input="updateDateFromComponents"
+                          class="date-input month"
+                          :class="{ 'error': dateErrors.month }"
+                          min="1"
+                          max="12"
+                        >
+                        <span class="date-separator">月</span>
+                      </div>
+                      <div class="date-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.day" 
+                          placeholder="日" 
+                          @input="updateDateFromComponents"
+                          class="date-input day"
+                          :class="{ 'error': dateErrors.day }"
+                          min="1"
+                          max="31"
+                        >
+                        <span class="date-separator">日</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 时间选择器 -->
+                  <div class="time-picker-section">
+                    <div class="time-inputs">
+                      <div class="time-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.hour" 
+                          placeholder="时" 
+                          @input="updateDateFromComponents"
+                          class="time-input hour"
+                          :class="{ 'error': dateErrors.hour }"
+                          min="0"
+                          max="23"
+                        >
+                        <span class="time-separator">:</span>
+                      </div>
+                      <div class="time-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.minute" 
+                          placeholder="分" 
+                          @input="updateDateFromComponents"
+                          class="time-input minute"
+                          :class="{ 'error': dateErrors.minute }"
+                          min="0"
+                          max="59"
+                        >
+                        <span class="time-separator">:</span>
+                      </div>
+                      <div class="time-input-group">
+                        <input 
+                          type="number" 
+                          v-model="dateComponents.second" 
+                          placeholder="秒" 
+                          @input="updateDateFromComponents"
+                          class="time-input second"
+                          :class="{ 'error': dateErrors.second }"
+                          min="0"
+                          max="59"
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 快速操作按钮 -->
+                  <div class="quick-actions">
+                    <button class="quick-btn" @click="setToNow" title="设置为当前时间">
+                      <i class="mdi mdi-clock-outline"></i>
+                      现在
+                    </button>
+                    <button class="quick-btn" @click="setToToday" title="设置为今天">
+                      <i class="mdi mdi-calendar-today"></i>
+                      今天
+                    </button>
+                    <button class="quick-btn" @click="clearDateTime" title="清空日期时间">
+                      <i class="mdi mdi-close"></i>
+                      清空
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <!-- 时区选择部分的模板代码 -->
+              <!-- 时区选择 -->
               <div class="input-block timezone-block">
-                <div class="input-label">{{ $t('timestamp.inputSection.timezone') }}：</div>
+                <div class="input-label">时区：</div>
                 <select v-model="selectedTimezone" @change="updateTimezoneInfo" class="timezone-select">
-                  <option value="Asia/Shanghai">{{ $t('timestamp.timezone.shanghai') }}</option>
-                  <option value="Asia/Tokyo">{{ $t('timestamp.timezone.tokyo') }}</option>
-                  <option value="Europe/London">{{ $t('timestamp.timezone.london') }}</option>
-                  <option value="America/New_York">{{ $t('timestamp.timezone.newYork') }}</option>
-                  <option value="Europe/Paris">{{ $t('timestamp.timezone.paris') }}</option>
+                  <option value="Asia/Shanghai">中国标准时间 (UTC+8)</option>
+                  <option value="Asia/Tokyo">日本标准时间 (UTC+9)</option>
+                  <option value="Europe/London">格林威治标准时间 (UTC+0)</option>
+                  <option value="America/New_York">美国东部时间 (UTC-5)</option>
+                  <option value="Europe/Paris">中欧时间 (UTC+1)</option>
+                  <option value="UTC">协调世界时 (UTC)</option>
                 </select>
               </div>
             </div>
@@ -79,15 +182,15 @@
         <div class="result-section">
           <div class="section-card">
             <div class="card-header">
-              <h2 class="card-title">{{ $t('timestamp.title') }}</h2>
+              <h2 class="card-title">转换结果</h2>
             </div>
             <div class="card-body">
               <!-- 秒级时间戳 -->
               <div class="result-block">
-                <div class="result-label">{{ $t('timestamp.type.seconds') }}：</div>
+                <div class="result-label">秒级时间戳：</div>
                 <div class="result-content">
                   <div class="result-text">{{ secondsTimestamp || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(secondsTimestamp)" :title="$t('timestamp.copy')"
+                  <button class="copy-button" @click="copyToClipboard(secondsTimestamp)" title="复制"
                     v-if="secondsTimestamp">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
@@ -96,10 +199,10 @@
 
               <!-- 毫秒级时间戳 -->
               <div class="result-block">
-                <div class="result-label">{{ $t('timestamp.type.milliseconds') }}：</div>
+                <div class="result-label">毫秒级时间戳：</div>
                 <div class="result-content">
                   <div class="result-text">{{ millisecondsTimestamp || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(millisecondsTimestamp)" :title="$t('timestamp.copy')"
+                  <button class="copy-button" @click="copyToClipboard(millisecondsTimestamp)" title="复制"
                     v-if="millisecondsTimestamp">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
@@ -153,225 +256,341 @@
     </div>
 
     <!-- 提示框 -->
-    <div class="toast-container" v-if="toast.show">
-      <div class="toast" :class="toast.type">
-        <i class="mdi" :class="toast.icon"></i>
-        <span>{{ toast.message }}</span>
+    <Transition name="toast">
+      <div class="toast-container" v-if="toast.show">
+        <div class="toast" :class="toast.type">
+          <i class="mdi" :class="toast.icon"></i>
+          <span>{{ toast.message }}</span>
+        </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
-<script>
-import { useI18n } from 'vue-i18n'
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
 
-export default {
-  setup() {
-    const { t } = useI18n()
-    return { t }
-  },
-  data() {
-    return {
-      timestampInput: '',
-      timestampType: 'seconds',
-      secondsTimestamp: '',
-      millisecondsTimestamp: '',
-      datetime: '',
-      dateComponents: {
-        year: '',
-        month: '',
-        day: '',
-        hour: '',
-        minute: '',
-        second: ''
-      },
-      formattedDate: '',
-      selectedTimezone: '',
-      isoDate: '',
-      utcDate: '',
-      currentTimezone: '',
-      toast: {
-        show: false,
-        message: '',
-        type: 'success',
-        icon: 'mdi-check-circle'
-      }
-    }
-  },
-  created() {
-    // 设置默认时区为用户当前时区
-    this.selectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    this.updateTimezoneInfo()
+// 响应式数据
+const timestampInput = ref('')
+const timestampType = ref('seconds')
+const secondsTimestamp = ref('')
+const millisecondsTimestamp = ref('')
+const datetime = ref('')
+const selectedTimezone = ref('')
+const currentTimezone = ref('')
+const formattedDate = ref('')
+const isoDate = ref('')
+const utcDate = ref('')
 
-    // 初始化为当前时间
-    this.useCurrentTimestamp()
-  },
-  methods: {
-    showToast(message, type = 'success') {
-      this.toast.message = message;
-      this.toast.type = type;
-      this.toast.icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
-      this.toast.show = true;
-      setTimeout(() => this.toast.show = false, 3000);
-    },
+// 日期组件
+const dateComponents = ref({
+  year: '',
+  month: '',
+  day: '',
+  hour: '',
+  minute: '',
+  second: ''
+})
 
-    detectTimestampType() {
-      if (!this.timestampInput) return;
+// 错误状态
+const timestampError = ref('')
+const dateErrors = ref({
+  year: false,
+  month: false,
+  day: false,
+  hour: false,
+  minute: false,
+  second: false
+})
 
-      const timestamp = Number(this.timestampInput);
-      if (isNaN(timestamp)) {
-        this.showToast('请输入有效的数字时间戳', 'error');
-        return;
-      }
+// Toast 状态
+const toast = ref({
+  show: false,
+  message: '',
+  type: 'success',
+  icon: 'mdi-check-circle'
+})
 
-      this.timestampType = timestamp > 10000000000 ? 'milliseconds' : 'seconds';
-      this.convertTimestamp();
-    },
+// 防抖定时器
+let debounceTimer = null
 
-    handleTimestampTypeChange() {
-      if (this.timestampInput) {
-        this.convertTimestamp();
-      }
-    },
-
-    convertTimestamp() {
-      if (!this.timestampInput) return;
-
-      const timestamp = Number(this.timestampInput);
-      if (isNaN(timestamp)) {
-        this.showToast('请输入有效的数字时间戳', 'error');
-        return;
-      }
-
-      try {
-        const date = new Date(this.timestampType === 'seconds' ? timestamp * 1000 : timestamp);
-        this.secondsTimestamp = this.timestampType === 'seconds' ? timestamp : Math.floor(timestamp / 1000);
-        this.millisecondsTimestamp = this.timestampType === 'seconds' ? timestamp * 1000 : timestamp;
-        this.updateDateFormats(date);
-        this.updateDateComponents(date);
-      } catch (e) {
-        this.showToast('时间戳转换失败，请检查输入', 'error');
-      }
-    },
-
-    isDateComponentsValid() {
-      return this.dateComponents.year && this.dateComponents.month && this.dateComponents.day;
-    },
-
-    updateDateFromComponents() {
-      if (!this.isDateComponentsValid()) return;
-
-      try {
-        this.limitDateComponentValues();
-        const date = new Date(
-          this.dateComponents.year,
-          this.dateComponents.month - 1,
-          this.dateComponents.day,
-          this.dateComponents.hour || 0,
-          this.dateComponents.minute || 0,
-          this.dateComponents.second || 0
-        );
-        this.updateDateFormats(date);
-        this.datetime = date.toISOString().slice(0, 16);
-        this.timestampInput = this.secondsTimestamp;
-      } catch (e) {
-        this.showToast('日期无效，请检查输入', 'error');
-      }
-    },
-
-    limitDateComponentValues() {
-      const limits = {
-        year: [1970, 2100],
-        month: [1, 12],
-        day: [1, 31],
-        hour: [0, 23],
-        minute: [0, 59],
-        second: [0, 59]
-      };
-
-      Object.entries(limits).forEach(([key, [min, max]]) => {
-        if (this.dateComponents[key]) {
-          this.dateComponents[key] = Math.min(Math.max(parseInt(this.dateComponents[key]), min), max);
-        }
-      });
-    },
-
-    updateDateComponents(date) {
-      this.dateComponents = {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate(),
-        hour: date.getHours(),
-        minute: date.getMinutes(),
-        second: date.getSeconds()
-      };
-    },
-
-    updateTimezoneInfo() {
-      const date = new Date();
-      this.currentTimezone = new Intl.DateTimeFormat('zh-CN', { timeZoneName: 'long' })
-        .formatToParts(date)
-        .find(part => part.type === 'timeZoneName').value;
-    },
-
-    updateDateFormats(date) {
-      this.secondsTimestamp = Math.floor(date.getTime() / 1000);
-      this.millisecondsTimestamp = date.getTime();
-      this.datetime = date.toISOString().slice(0, 16);
-      this.formattedDate = date.toLocaleString('zh-CN', {
-        timeZone: this.selectedTimezone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      this.isoDate = date.toISOString();
-      this.utcDate = date.toUTCString();
-    },
-
-    useCurrentTimestamp() {
-      const now = Date.now();
-      this.timestampInput = this.timestampType === 'seconds' ? Math.floor(now / 1000).toString() : now.toString();
-      this.detectTimestampType();
-    },
-
-    clearTimestamp() {
-      this.timestampInput = '';
-      this.secondsTimestamp = '';
-      this.millisecondsTimestamp = '';
-      this.formattedDate = '';
-      this.isoDate = '';
-      this.utcDate = '';
-      // 清空日期时间输入框
-      this.dateComponents = {
-        year: '',
-        month: '',
-        day: '',
-        hour: '',
-        minute: '',
-        second: ''
-      };
-      this.datetime = '';
-    },
-
-    async copyToClipboard(text) {
-      if (!text) {
-        this.showToast('没有可复制的内容', 'error');
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(text.toString());
-        this.showToast('已复制到剪贴板');
-      } catch (err) {
-        this.showToast('复制失败', 'error');
-      }
-    }
+// 工具函数
+const debounce = (func, delay) => {
+  return (...args) => {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => func.apply(this, args), delay)
   }
 }
+
+const showToast = (message, type = 'success') => {
+  toast.value.message = message
+  toast.value.type = type
+  toast.value.icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'
+  toast.value.show = true
+
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
+
+// 时间戳处理函数
+const detectTimestampType = debounce(() => {
+  if (!timestampInput.value) {
+    timestampError.value = ''
+    return
+  }
+
+  const timestamp = Number(timestampInput.value)
+  if (isNaN(timestamp)) {
+    timestampError.value = '请输入有效的数字时间戳'
+    return
+  }
+
+  timestampError.value = ''
+  timestampType.value = timestamp > 10000000000 ? 'milliseconds' : 'seconds'
+  convertTimestamp()
+}, 300)
+
+const handleTimestampTypeChange = () => {
+  if (timestampInput.value) {
+    convertTimestamp()
+  }
+}
+
+const convertTimestamp = () => {
+  if (!timestampInput.value) return
+
+  const timestamp = Number(timestampInput.value)
+  if (isNaN(timestamp)) {
+    showToast('请输入有效的数字时间戳', 'error')
+    return
+  }
+
+  try {
+    const date = new Date(timestampType.value === 'seconds' ? timestamp * 1000 : timestamp)
+    if (isNaN(date.getTime())) {
+      throw new Error('无效的时间戳')
+    }
+
+    secondsTimestamp.value = timestampType.value === 'seconds' ? timestamp : Math.floor(timestamp / 1000)
+    millisecondsTimestamp.value = timestampType.value === 'seconds' ? timestamp * 1000 : timestamp
+    updateDateFormats(date)
+    updateDateComponents(date)
+  } catch (e) {
+    showToast('时间戳转换失败，请检查输入', 'error')
+  }
+}
+
+// 日期组件处理函数
+const validateDateComponent = (key, value) => {
+  const limits = {
+    year: [1970, 2100],
+    month: [1, 12],
+    day: [1, 31],
+    hour: [0, 23],
+    minute: [0, 59],
+    second: [0, 59]
+  }
+
+  if (!value) {
+    dateErrors.value[key] = false
+    return true
+  }
+
+  const numValue = parseInt(value)
+  const [min, max] = limits[key]
+  
+  if (isNaN(numValue) || numValue < min || numValue > max) {
+    dateErrors.value[key] = true
+    return false
+  }
+
+  // 特殊验证：月份天数
+  if (key === 'day' && dateComponents.value.year && dateComponents.value.month) {
+    const year = parseInt(dateComponents.value.year)
+    const month = parseInt(dateComponents.value.month)
+    const maxDays = new Date(year, month, 0).getDate()
+    if (numValue > maxDays) {
+      dateErrors.value[key] = true
+      return false
+    }
+  }
+
+  dateErrors.value[key] = false
+  return true
+}
+
+const updateDateFromComponents = debounce(() => {
+  // 验证所有日期组件
+  const isValid = Object.keys(dateComponents.value).every(key => 
+    validateDateComponent(key, dateComponents.value[key])
+  )
+
+  if (!isValid) return
+
+  // 检查是否有足够的日期信息
+  if (!dateComponents.value.year || !dateComponents.value.month || !dateComponents.value.day) {
+    return
+  }
+
+  try {
+    const date = new Date(
+      parseInt(dateComponents.value.year),
+      parseInt(dateComponents.value.month) - 1,
+      parseInt(dateComponents.value.day),
+      parseInt(dateComponents.value.hour) || 0,
+      parseInt(dateComponents.value.minute) || 0,
+      parseInt(dateComponents.value.second) || 0
+    )
+
+    if (isNaN(date.getTime())) {
+      throw new Error('无效的日期')
+    }
+
+    updateDateFormats(date)
+    timestampInput.value = secondsTimestamp.value.toString()
+  } catch (e) {
+    showToast('日期无效，请检查输入', 'error')
+  }
+}, 300)
+
+const updateDateComponents = (date) => {
+  dateComponents.value = {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    hour: date.getHours(),
+    minute: date.getMinutes(),
+    second: date.getSeconds()
+  }
+}
+
+// 时区处理函数
+const updateTimezoneInfo = () => {
+  const date = new Date()
+  try {
+    currentTimezone.value = new Intl.DateTimeFormat('zh-CN', { 
+      timeZone: selectedTimezone.value,
+      timeZoneName: 'long' 
+    }).formatToParts(date).find(part => part.type === 'timeZoneName')?.value || selectedTimezone.value
+  } catch (e) {
+    currentTimezone.value = selectedTimezone.value
+  }
+}
+
+const updateDateFormats = (date) => {
+  secondsTimestamp.value = Math.floor(date.getTime() / 1000)
+  millisecondsTimestamp.value = date.getTime()
+  datetime.value = date.toISOString().slice(0, 16)
+  
+  try {
+    formattedDate.value = date.toLocaleString('zh-CN', {
+      timeZone: selectedTimezone.value,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+  } catch (e) {
+    formattedDate.value = date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    })
+  }
+  
+  isoDate.value = date.toISOString()
+  utcDate.value = date.toUTCString()
+}
+
+// 快捷操作函数
+const useCurrentTimestamp = () => {
+  const now = Date.now()
+  timestampInput.value = timestampType.value === 'seconds' ? Math.floor(now / 1000).toString() : now.toString()
+  detectTimestampType()
+}
+
+const setToNow = () => {
+  const now = new Date()
+  updateDateComponents(now)
+  updateDateFromComponents()
+}
+
+const setToToday = () => {
+  const today = new Date()
+  dateComponents.value = {
+    year: today.getFullYear(),
+    month: today.getMonth() + 1,
+    day: today.getDate(),
+    hour: 0,
+    minute: 0,
+    second: 0
+  }
+  updateDateFromComponents()
+}
+
+const clearTimestamp = () => {
+  timestampInput.value = ''
+  secondsTimestamp.value = ''
+  millisecondsTimestamp.value = ''
+  formattedDate.value = ''
+  isoDate.value = ''
+  utcDate.value = ''
+  timestampError.value = ''
+}
+
+const clearDateTime = () => {
+  dateComponents.value = {
+    year: '',
+    month: '',
+    day: '',
+    hour: '',
+    minute: '',
+    second: ''
+  }
+  Object.keys(dateErrors.value).forEach(key => {
+    dateErrors.value[key] = false
+  })
+}
+
+const copyToClipboard = async (text) => {
+  if (!text) {
+    showToast('没有可复制的内容', 'error')
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(text.toString())
+    showToast('已复制到剪贴板')
+  } catch (err) {
+    showToast('复制失败', 'error')
+  }
+}
+
+// 监听器
+watch(dateComponents, () => {
+  // 自动验证日期组件
+  Object.keys(dateComponents.value).forEach(key => {
+    validateDateComponent(key, dateComponents.value[key])
+  })
+}, { deep: true })
+
+// 生命周期
+onMounted(() => {
+  // 设置默认时区
+  selectedTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone
+  updateTimezoneInfo()
+  
+  // 初始化为当前时间
+  useCurrentTimestamp()
+})
 </script>
 
 <style scoped>
@@ -405,32 +624,32 @@ export default {
 /* 卡片样式 */
 .section-card {
   background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   border: 1px solid #e0e0e0;
 }
 
 .card-header {
-  padding: 10px 16px;
+  padding: 16px 20px;
   background-color: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
 }
 
 .card-title {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: #333;
   margin: 0;
 }
 
 .card-body {
-  padding: 20px;
+  padding: 24px;
 }
 
 /* 输入块样式 */
 .input-block {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 
   &:last-child {
     margin-bottom: 0;
@@ -440,13 +659,14 @@ export default {
 .input-label {
   font-size: 14px;
   color: #555;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: 500;
 }
 
 .input-control {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* 时间戳输入样式 */
@@ -459,15 +679,22 @@ export default {
 
 .text-input {
   flex: 1;
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.2s;
+  transition: all 0.3s;
+  background: #fff;
 
   &:focus {
-    border-color: #409eff;
+    border-color: #1a73e8;
     outline: none;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  }
+
+  &.error {
+    border-color: #d93025;
+    box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.1);
   }
 }
 
@@ -480,39 +707,29 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
   background-color: #fff;
-  color: #606266;
+  color: #666;
   cursor: pointer;
-  transition: all 0.2s;
-}
+  transition: all 0.3s;
 
-.action-button:hover {
-  background-color: #f5f7fa;
-  border-color: #c6e2ff;
-  color: #409EFF;
-}
+  &:hover {
+    background-color: #f8f9fa;
+    border-color: #1a73e8;
+    color: #1a73e8;
+    transform: translateY(-1px);
+  }
 
-.action-button:active {
-  border-color: #409EFF;
-  color: #409EFF;
-  outline: none;
-}
+  &:active {
+    transform: translateY(0);
+  }
 
-.action-button i {
-  font-size: 16px;
-}
-
-.action-button:last-child:hover {
-  border-color: #fbc4c4;
-  color: #F56C6C;
-}
-
-.action-button:last-child:active {
-  border-color: #F56C6C;
+  i {
+    font-size: 18px;
+  }
 }
 
 /* 时间戳类型选项样式 */
@@ -522,64 +739,84 @@ export default {
 
 .timestamp-type-options {
   display: flex;
-  gap: 16px;
-  flex-direction: row;
+  gap: 20px;
   align-items: center;
 }
 
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   cursor: pointer;
-  margin-bottom: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
 
   input[type="radio"] {
     margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #1a73e8;
   }
 
   span {
     font-size: 14px;
-    color: #606266;
+    color: #555;
+    font-weight: 500;
   }
 }
 
-/* 日期输入样式 */
-.date-inputs {
+/* 日期时间输入容器 */
+.datetime-input-container {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  padding: 8px 12px;
-  transition: all 0.3s;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.date-group,
-.time-group {
+/* 日期选择器样式 */
+.date-picker-section,
+.time-picker-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  border: 2px solid transparent;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: #e1e5e9;
+  }
+}
+
+.date-inputs,
+.time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+.date-input-group,
+.time-input-group {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.datetime-separator {
-  color: #909399;
-  font-weight: 500;
-  margin: 0 12px;
-  user-select: none;
-}
-
-.date-input {
-  width: 40px;
-  padding: 4px;
-  border: none;
+.date-input,
+.time-input {
+  width: 60px;
+  padding: 8px 12px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
   font-size: 14px;
   text-align: center;
-  -moz-appearance: textfield;
-  color: #333;
+  background: #fff;
   transition: all 0.3s;
-  background: transparent;
+  -moz-appearance: textfield;
 
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
@@ -589,39 +826,157 @@ export default {
 
   &:focus {
     outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  }
+
+  &.error {
+    border-color: #d93025;
+    box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.1);
   }
 
   &.year {
+    width: 80px;
+  }
+
+  &.month,
+  &.day {
     width: 60px;
+  }
+
+  &.hour,
+  &.minute,
+  &.second {
+    width: 50px;
   }
 }
 
-.date-separator {
+.date-separator,
+.time-separator {
   color: #666;
   font-size: 14px;
+  font-weight: 500;
   user-select: none;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* 快速操作按钮 */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f8f9fa;
+    border-color: #1a73e8;
+    color: #1a73e8;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 16px;
+  }
+}
+
+/* 错误消息 */
+.error-message {
+  color: #d93025;
+  font-size: 13px;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #fce8e6;
+  border-radius: 4px;
+  border-left: 3px solid #d93025;
+}
+
+/* 时区选择器样式 */
+.timezone-block {
+  position: relative;
+}
+
+.timezone-select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23666'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+
+  &:hover {
+    border-color: #1a73e8;
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+  }
+
+  option {
+    padding: 12px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+  }
 }
 
 /* 结果块样式 */
 .result-block {
   display: flex;
   flex-direction: column;
-  margin-bottom: 12px;
-  padding: 10px;
+  margin-bottom: 16px;
+  padding: 16px;
   background-color: #f8f9fa;
-  border-radius: 4px;
-  border: 1px solid #eee;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+  transition: all 0.3s;
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  &:hover {
+    background-color: #f1f3f4;
+    border-color: #dadce0;
   }
 }
 
 .result-label {
   font-size: 14px;
   color: #555;
-  margin-bottom: 6px;
-  font-weight: 500;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .result-content {
@@ -634,34 +989,50 @@ export default {
   font-size: 14px;
   color: #333;
   word-break: break-all;
+  font-family: 'Consolas', 'Monaco', monospace;
+  background: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #e1e5e9;
+  flex: 1;
+  margin-right: 8px;
 }
 
 /* 复制按钮样式 */
 .copy-button {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: transparent;
-  border: none;
-  border-radius: 4px;
+  background-color: #fff;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
   color: #666;
   cursor: pointer;
-  transition: all 0.2s;
-  margin-left: 8px;
+  transition: all 0.3s;
   flex-shrink: 0;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: #f8f9fa;
+    border-color: #1a73e8;
     color: #1a73e8;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 16px;
   }
 }
 
-/* 提示框样式 */
+/* Toast 样式 */
 .toast-container {
   position: fixed;
-  bottom: 20px;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
@@ -670,45 +1041,48 @@ export default {
 .toast {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  font-size: 14px;
-  min-width: 200px;
-  animation: slideUp 0.3s ease-out forwards;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 15px;
+  min-width: 250px;
 
   &.success {
     background-color: #e6f4ea;
     color: #0f9d58;
-    border-left: 3px solid #0f9d58;
+    border-left: 4px solid #0f9d58;
   }
 
   &.error {
     background-color: #fce8e6;
     color: #d93025;
-    border-left: 3px solid #d93025;
+    border-left: 4px solid #d93025;
   }
 
   i {
-    font-size: 18px;
+    font-size: 20px;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+/* Toast 动画 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
 }
 
 /* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .converter-area {
     flex-direction: column;
   }
@@ -718,103 +1092,72 @@ export default {
     width: 100%;
   }
 
-  .date-inputs {
+  .date-inputs,
+  .time-inputs {
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
   }
 
-  .date-group,
-  .time-group {
-    justify-content: space-between;
+  .date-input-group,
+  .time-input-group {
+    justify-content: center;
   }
 
-  .date-input {
-    flex: 1;
-    max-width: 80px;
+  .quick-actions {
+    justify-content: center;
   }
 }
 
-.select-input {
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 14px;
-  color: #333;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background-color: #fff;
-  cursor: pointer;
-  transition: all 0.2s;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23606266' d='M6 8.825L1.175 4 2.238 2.938 6 6.7l3.763-3.762L10.825 4z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-}
+@media (max-width: 600px) {
+  .content-wrapper {
+    padding: 10px;
+  }
 
-.select-input:hover {
-  border-color: #c0c4cc;
-}
+  .card-body {
+    padding: 16px;
+  }
 
-.select-input:focus {
-  outline: none;
-  border-color: #409eff;
-}
+  .timestamp-input-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
 
-.select-input option {
-  padding: 8px;
-  font-size: 14px;
-}
+  .timestamp-actions {
+    justify-content: center;
+  }
 
-/* 时区选择器样式 */
-.timezone-block {
-  position: relative;
-}
+  .date-input,
+  .time-input {
+    width: 50px;
+    
+    &.year {
+      width: 70px;
+    }
+  }
 
-.timezone-select {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 14px;
-  color: #333;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background-color: #fff;
-  cursor: pointer;
-  transition: all 0.2s;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23606266'%3E%3Cpath d='M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  padding-right: 36px;
-}
+  .quick-actions {
+    flex-direction: column;
+    align-items: center;
+  }
 
-.timezone-select:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.1);
-}
+  .quick-btn {
+    width: 100%;
+    justify-content: center;
+  }
 
-.timezone-select:focus {
-  outline: none;
-  border-color: #409eff;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
-}
+  .result-content {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
 
-.timezone-select option {
-  padding: 12px;
-  font-size: 14px;
-  background-color: #fff;
-  color: #333;
-}
+  .result-text {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
 
-.timezone-select option:hover {
-  background-color: #f5f7fa;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .timezone-select {
-    padding: 12px 14px;
-    font-size: 15px;
+  .copy-button {
+    align-self: flex-end;
   }
 }
 </style>

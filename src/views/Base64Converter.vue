@@ -125,14 +125,6 @@
         </div>
       </div>
     </Transition>
-
-    <!-- 加载遮罩 -->
-    <div v-if="isProcessing" class="loading-overlay">
-      <div class="loading-spinner">
-        <i class="mdi mdi-loading mdi-spin"></i>
-        <span>处理中...</span>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -266,16 +258,12 @@ const encode = async () => {
     showToast('请先输入需要编码的文本', 'error')
     return
   }
-
-  setProcessing(true)
+  // 直接处理，无需loading
   try {
-    await new Promise(resolve => setTimeout(resolve, 100)) // 模拟处理时间
     output.value = encodeBase64(input.value)
     showToast('Base64 编码成功')
   } catch (e) {
     showToast(e.message, 'error')
-  } finally {
-    setProcessing(false)
   }
 }
 
@@ -284,16 +272,12 @@ const decode = async () => {
     showToast('请先输入需要解码的 Base64 字符串', 'error')
     return
   }
-
-  setProcessing(true)
+  // 直接处理，无需loading
   try {
-    await new Promise(resolve => setTimeout(resolve, 100)) // 模拟处理时间
     output.value = decodeBase64(input.value)
     showToast('Base64 解码成功')
   } catch (e) {
     showToast(e.message, 'error')
-  } finally {
-    setProcessing(false)
   }
 }
 
@@ -639,41 +623,6 @@ onUnmounted(() => {
 .toast-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(20px);
-}
-
-/* 加载遮罩 */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-}
-
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.loading-spinner i {
-  font-size: 32px;
-  color: #1a73e8;
-}
-
-.loading-spinner span {
-  font-size: 16px;
-  color: #5f6368;
 }
 
 /* 响应式设计 */
