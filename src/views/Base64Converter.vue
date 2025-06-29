@@ -6,22 +6,45 @@
     </div>
 
     <div class="converter-actions">
-      <button class="main-btn" @click="encode">
-        <i class="mdi mdi-arrow-down-bold-box-outline"></i> 编码
+      <button 
+        class="main-btn" 
+        @click="encode"
+        :disabled="isProcessing || !input.trim()"
+        :class="{ 'disabled': isProcessing || !input.trim() }"
+      >
+        <i class="mdi mdi-arrow-down-bold-box-outline"></i> 
+        {{ isProcessing ? '处理中...' : '编码' }}
       </button>
-      <button class="main-btn" @click="decode">
-        <i class="mdi mdi-arrow-up-bold-box-outline"></i> 解码
+      <button 
+        class="main-btn" 
+        @click="decode"
+        :disabled="isProcessing || !input.trim()"
+        :class="{ 'disabled': isProcessing || !input.trim() }"
+      >
+        <i class="mdi mdi-arrow-up-bold-box-outline"></i> 
+        {{ isProcessing ? '处理中...' : '解码' }}
       </button>
       <button class="main-btn" @click="clearAll">
         <i class="mdi mdi-delete-outline"></i> 清空
       </button>
-      <button class="main-btn" @click="swapTexts">
+      <button 
+        class="main-btn" 
+        @click="swapTexts"
+        :disabled="!input.trim() && !output.trim()"
+        :class="{ 'disabled': !input.trim() && !output.trim() }"
+      >
         <i class="mdi mdi-swap-vertical"></i> 交换
       </button>
     </div>
 
     <div class="converter-content">
-      <div class="input-panel">
+      <div 
+        class="input-panel"
+        @drop="handleFileDrop"
+        @dragover.prevent
+        @dragenter.prevent
+        @dragleave.prevent
+      >
         <div class="panel-header">
           <h3>输入文本</h3>
           <div class="input-actions">
@@ -33,171 +56,341 @@
               <i class="mdi mdi-clipboard-text-outline"></i>
               <span>粘贴</span>
             </button>
+            <button class="action-btn" @click="selectFile" title="选择文件">
+              <i class="mdi mdi-file-upload-outline"></i>
+              <span>文件</span>
+            </button>
+            <input 
+              ref="fileInput" 
+              type="file" 
+              @change="handleFileSelect" 
+              style="display: none"
+              accept=".txt,.json,.xml,.html,.css,.js,.md"
+            />
           </div>
         </div>
-        <textarea v-model="input" placeholder="请输入要转换的文本" class="text-input"></textarea>
+        <textarea 
+          v-model="input" 
+          placeholder="请输入要转换的文本，或拖拽文件到此处" 
+          class="text-input"
+          @input="handleInputChange"
+          :class="{ 'drag-over': isDragOver }"
+        ></textarea>
+        <div v-if="inputStats" class="input-stats">
+          <span>字符数: {{ inputStats.charCount }}</span>
+          <span>字节数: {{ inputStats.byteCount }}</span>
+          <span>行数: {{ inputStats.lineCount }}</span>
+        </div>
       </div>
 
       <div class="output-panel">
         <div class="panel-header">
           <h3>转换结果</h3>
           <div class="output-actions">
-            <button class="action-btn" @click="downloadResult" title="下载结果">
+            <button 
+              class="action-btn" 
+              @click="downloadResult" 
+              title="下载结果"
+              :disabled="!output.trim()"
+            >
               <i class="mdi mdi-download-outline"></i>
               <span>下载</span>
             </button>
-            <button class="action-btn" @click="copyResult" title="复制结果">
+            <button 
+              class="action-btn" 
+              @click="copyResult" 
+              title="复制结果"
+              :disabled="!output.trim()"
+            >
               <i class="mdi" :class="copySuccess ? 'mdi-check' : 'mdi-content-copy'"></i>
               <span>{{ copySuccess ? '已复制' : '复制' }}</span>
             </button>
           </div>
         </div>
         <textarea v-model="output" readonly class="text-output"></textarea>
+        <div v-if="outputStats" class="output-stats">
+          <span>字符数: {{ outputStats.charCount }}</span>
+          <span>字节数: {{ outputStats.byteCount }}</span>
+          <span>行数: {{ outputStats.lineCount }}</span>
+        </div>
       </div>
     </div>
 
     <!-- 自定义提示框 -->
-    <div class="toast-container" v-if="toast.show">
-      <div class="toast" :class="toast.type">
-        <i class="mdi" :class="toast.icon"></i>
-        <span>{{ toast.message }}</span>
+    <Transition name="toast">
+      <div class="toast-container" v-if="toast.show">
+        <div class="toast" :class="toast.type">
+          <i class="mdi" :class="toast.icon"></i>
+          <span>{{ toast.message }}</span>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 加载遮罩 -->
+    <div v-if="isProcessing" class="loading-overlay">
+      <div class="loading-spinner">
+        <i class="mdi mdi-loading mdi-spin"></i>
+        <span>处理中...</span>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      input: '',
-      output: '',
-      error: '',
-      copySuccess: false,
-      toast: {
-        show: false,
-        message: '',
-        type: 'success',
-        icon: 'mdi-check-circle'
-      }
-    }
-  },
-  methods: {
-    // 显示自定义提示
-    showToast(message, type = 'success') {
-      this.toast.message = message;
-      this.toast.type = type;
-      this.toast.icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
-      this.toast.show = true;
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-      // 3秒后自动关闭
-      setTimeout(() => {
-        this.toast.show = false;
-      }, 3000);
-    },
+// 响应式数据
+const input = ref('')
+const output = ref('')
+const copySuccess = ref(false)
+const isProcessing = ref(false)
+const isDragOver = ref(false)
+const fileInput = ref(null)
 
-    encode() {
-      if (!this.input.trim()) {
-        this.showToast('请先输入需要编码的文本', 'error');
-        return;
-      }
+// Toast 状态
+const toast = ref({
+  show: false,
+  message: '',
+  type: 'success',
+  icon: 'mdi-check-circle'
+})
 
-      try {
-        this.output = btoa(this.input);
-        this.error = '';
-        this.showToast('Base64 编码成功');
-      } catch (e) {
-        this.error = '编码失败：输入包含非 ASCII 字符';
-        this.showToast('编码失败：输入包含非 ASCII 字符', 'error');
-      }
-    },
+// 防抖定时器
+let debounceTimer = null
 
-    decode() {
-      if (!this.input.trim()) {
-        this.showToast('请先输入需要解码的 Base64 字符串', 'error');
-        return;
-      }
+// 计算属性
+const inputStats = computed(() => {
+  if (!input.value) return null
+  return {
+    charCount: input.value.length,
+    byteCount: new Blob([input.value]).size,
+    lineCount: input.value.split('\n').length
+  }
+})
 
-      try {
-        this.output = atob(this.input);
-        this.error = '';
-        this.showToast('Base64 解码成功');
-      } catch (e) {
-        this.error = '解码失败：输入不是有效的 Base64 字符串';
-        this.showToast('解码失败：输入不是有效的 Base64 字符串', 'error');
-      }
-    },
+const outputStats = computed(() => {
+  if (!output.value) return null
+  return {
+    charCount: output.value.length,
+    byteCount: new Blob([output.value]).size,
+    lineCount: output.value.split('\n').length
+  }
+})
 
-    async copyResult() {
-      if (!this.output) {
-        this.showToast('没有可复制的内容', 'error');
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(this.output);
-        this.copySuccess = true;
-        this.showToast('已复制到剪贴板');
-
-        // 2秒后恢复按钮状态
-        setTimeout(() => {
-          this.copySuccess = false;
-        }, 2000);
-      } catch (e) {
-        this.showToast('复制失败', 'error');
-      }
-    },
-
-    clearInput() {
-      this.input = '';
-      this.showToast('输入已清空');
-    },
-
-    clearAll() {
-      this.input = '';
-      this.output = '';
-      this.error = '';
-      this.showToast('已清空所有内容');
-    },
-
-    swapTexts() {
-      const temp = this.input;
-      this.input = this.output;
-      this.output = temp;
-      if (this.input && this.output) {
-        this.showToast('输入和输出内容已交换');
-      }
-    },
-
-    async pasteFromClipboard() {
-      try {
-        const text = await navigator.clipboard.readText();
-        this.input = text;
-        this.showToast('已从剪贴板粘贴');
-      } catch (err) {
-        this.showToast('无法从剪贴板读取内容', 'error');
-      }
-    },
-
-    downloadResult() {
-      if (!this.output) {
-        this.showToast('没有可下载的内容', 'error');
-        return;
-      }
-
-      const blob = new Blob([this.output], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'base64_result.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      this.showToast('文件已下载');
-    }
+// 工具函数
+const debounce = (func, delay) => {
+  return (...args) => {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => func.apply(this, args), delay)
   }
 }
+
+const showToast = (message, type = 'success') => {
+  toast.value.message = message
+  toast.value.type = type
+  toast.value.icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'
+  toast.value.show = true
+
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
+
+const setProcessing = (processing) => {
+  isProcessing.value = processing
+}
+
+// Base64 编码/解码函数
+const encodeBase64 = (str) => {
+  try {
+    // 处理 Unicode 字符
+    return btoa(unescape(encodeURIComponent(str)))
+  } catch (e) {
+    throw new Error('编码失败：输入包含无效字符')
+  }
+}
+
+const decodeBase64 = (str) => {
+  try {
+    // 处理 Unicode 字符
+    return decodeURIComponent(escape(atob(str)))
+  } catch (e) {
+    throw new Error('解码失败：输入不是有效的 Base64 字符串')
+  }
+}
+
+// 文件处理函数
+const handleFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    readFile(file)
+  }
+  // 清空 input 值，允许重复选择同一文件
+  event.target.value = ''
+}
+
+const selectFile = () => {
+  fileInput.value?.click()
+}
+
+const handleFileDrop = (event) => {
+  event.preventDefault()
+  isDragOver.value = false
+  
+  const files = event.dataTransfer.files
+  if (files.length > 0) {
+    readFile(files[0])
+  }
+}
+
+const readFile = (file) => {
+  if (file.size > 10 * 1024 * 1024) { // 10MB 限制
+    showToast('文件过大，请选择小于 10MB 的文件', 'error')
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    input.value = e.target.result
+    showToast(`已加载文件: ${file.name}`)
+  }
+  reader.onerror = () => {
+    showToast('文件读取失败', 'error')
+  }
+  reader.readAsText(file)
+}
+
+// 主要功能函数
+const encode = async () => {
+  if (!input.value.trim()) {
+    showToast('请先输入需要编码的文本', 'error')
+    return
+  }
+
+  setProcessing(true)
+  try {
+    await new Promise(resolve => setTimeout(resolve, 100)) // 模拟处理时间
+    output.value = encodeBase64(input.value)
+    showToast('Base64 编码成功')
+  } catch (e) {
+    showToast(e.message, 'error')
+  } finally {
+    setProcessing(false)
+  }
+}
+
+const decode = async () => {
+  if (!input.value.trim()) {
+    showToast('请先输入需要解码的 Base64 字符串', 'error')
+    return
+  }
+
+  setProcessing(true)
+  try {
+    await new Promise(resolve => setTimeout(resolve, 100)) // 模拟处理时间
+    output.value = decodeBase64(input.value)
+    showToast('Base64 解码成功')
+  } catch (e) {
+    showToast(e.message, 'error')
+  } finally {
+    setProcessing(false)
+  }
+}
+
+const copyResult = async () => {
+  if (!output.value) {
+    showToast('没有可复制的内容', 'error')
+    return
+  }
+
+  try {
+    await navigator.clipboard.writeText(output.value)
+    copySuccess.value = true
+    showToast('已复制到剪贴板')
+
+    setTimeout(() => {
+      copySuccess.value = false
+    }, 2000)
+  } catch (e) {
+    showToast('复制失败', 'error')
+  }
+}
+
+const clearInput = () => {
+  input.value = ''
+  showToast('输入已清空')
+}
+
+const clearAll = () => {
+  input.value = ''
+  output.value = ''
+  showToast('已清空所有内容')
+}
+
+const swapTexts = () => {
+  const temp = input.value
+  input.value = output.value
+  output.value = temp
+  if (input.value && output.value) {
+    showToast('输入和输出内容已交换')
+  }
+}
+
+const pasteFromClipboard = async () => {
+  try {
+    const text = await navigator.clipboard.readText()
+    input.value = text
+    showToast('已从剪贴板粘贴')
+  } catch (err) {
+    showToast('无法从剪贴板读取内容', 'error')
+  }
+}
+
+const downloadResult = () => {
+  if (!output.value) {
+    showToast('没有可下载的内容', 'error')
+    return
+  }
+
+  const blob = new Blob([output.value], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `base64_result_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.txt`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  showToast('文件已下载')
+}
+
+// 输入变化处理（防抖）
+const handleInputChange = debounce(() => {
+  // 可以在这里添加实时预览或其他功能
+}, 300)
+
+// 拖拽事件处理
+const handleDragEnter = () => {
+  isDragOver.value = true
+}
+
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+// 生命周期
+onMounted(() => {
+  // 添加全局拖拽事件监听
+  document.addEventListener('dragenter', handleDragEnter)
+  document.addEventListener('dragleave', handleDragLeave)
+})
+
+onUnmounted(() => {
+  // 清理事件监听
+  document.removeEventListener('dragenter', handleDragEnter)
+  document.removeEventListener('dragleave', handleDragLeave)
+  clearTimeout(debounceTimer)
+})
 </script>
 
 <style scoped>
@@ -248,15 +441,22 @@ export default {
   justify-content: center;
 }
 
-.main-btn:hover {
+.main-btn:hover:not(.disabled) {
   background: #1557b0;
   transform: translateY(-2px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.main-btn:active {
+.main-btn:active:not(.disabled) {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.main-btn.disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .converter-content {
@@ -282,6 +482,12 @@ export default {
   min-height: 500px;
   width: 100%;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.input-panel.drag-over {
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }
 
 .panel-header {
@@ -320,9 +526,14 @@ export default {
   transition: all 0.2s;
 }
 
-.action-btn:hover {
+.action-btn:hover:not(:disabled) {
   background: #e8eaed;
   color: #1a73e8;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .action-btn i {
@@ -330,7 +541,6 @@ export default {
   transition: all 0.2s;
 }
 
-/* 复制成功状态样式 */
 .action-btn .mdi-check {
   color: #0f9d58;
 }
@@ -346,25 +556,37 @@ export default {
   line-height: 1.5;
   resize: none;
   min-height: 450px;
+  transition: all 0.3s;
 }
 
 .text-input:focus {
   outline: none;
+  box-shadow: inset 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.text-input.drag-over {
+  background: rgba(26, 115, 232, 0.05);
 }
 
 .text-output {
   background: #fff;
 }
 
-.error {
-  padding: 10px 16px;
-  font-size: 14px;
-  color: #d93025;
+.input-stats,
+.output-stats {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #f8f9fa;
   border-top: 1px solid #e0e0e0;
-  width: 100%;
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.input-stats span,
+.output-stats span {
+  flex: 1;
+  text-align: center;
 }
 
 /* 自定义提示框样式 */
@@ -385,7 +607,6 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 15px;
   min-width: 250px;
-  animation: slideUp 0.3s ease-out forwards;
 }
 
 .toast.success {
@@ -404,16 +625,55 @@ export default {
   font-size: 20px;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+/* Toast 动画 */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(20px);
+}
+
+/* 加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.loading-spinner i {
+  font-size: 32px;
+  color: #1a73e8;
+}
+
+.loading-spinner span {
+  font-size: 16px;
+  color: #5f6368;
 }
 
 /* 响应式设计 */
@@ -466,6 +726,17 @@ export default {
   .action-btn {
     flex: 1;
     justify-content: center;
+  }
+
+  .input-stats,
+  .output-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .input-stats span,
+  .output-stats span {
+    text-align: left;
   }
 }
 </style>
