@@ -1,8 +1,8 @@
 <template>
   <div class="formatter">
     <div class="formatter-header">
-      <h1>JSON 格式化工具</h1>
-      <p>粘贴、验证、格式化和压缩 JSON 数据</p>
+      <h1>{{ t('json.title') }}</h1>
+      <p>{{ t('json.subtitle') }}</p>
     </div>
 
     <div class="formatter-actions">
@@ -13,7 +13,7 @@
         :class="{ 'disabled': !inputJson.trim() }"
       >
         <i class="mdi mdi-code-json"></i> 
-        格式化
+        {{ t('json.actions.format') }}
       </button>
       <button 
         class="main-btn" 
@@ -22,7 +22,7 @@
         :class="{ 'disabled': !inputJson.trim() }"
       >
         <i class="mdi mdi-arrow-collapse-horizontal"></i> 
-        压缩
+        {{ t('json.actions.compress') }}
       </button>
       <button 
         class="main-btn" 
@@ -31,7 +31,7 @@
         :class="{ 'disabled': !inputJson.trim() }"
       >
         <i class="mdi mdi-check-circle-outline"></i> 
-        验证
+        {{ t('json.actions.validate') }}
       </button>
       <button 
         class="main-btn" 
@@ -40,7 +40,7 @@
         :class="{ 'disabled': !inputJson.trim() }"
       >
         <i class="mdi mdi-sort-alphabetical-ascending"></i> 
-        排序
+        {{ t('json.actions.sort') }}
       </button>
     </div>
 
@@ -53,19 +53,19 @@
         @dragleave.prevent
       >
         <div class="panel-header">
-          <h3>输入 JSON</h3>
+          <h3>{{ t('json.labels.input') }}</h3>
           <div class="input-actions">
-            <button class="action-btn" @click="clearInput" title="清空输入">
+            <button class="action-btn" @click="clearInput" :title="t('json.actions.clear')">
               <i class="mdi mdi-delete-outline"></i>
-              <span>清空</span>
+              <span>{{ t('json.actions.clear') }}</span>
             </button>
-            <button class="action-btn" @click="pasteFromClipboard" title="从剪贴板粘贴">
+            <button class="action-btn" @click="pasteFromClipboard" :title="t('json.actions.paste')">
               <i class="mdi mdi-clipboard-text-outline"></i>
-              <span>粘贴</span>
+              <span>{{ t('json.actions.paste') }}</span>
             </button>
-            <button class="action-btn" @click="selectFile" title="选择文件">
+            <button class="action-btn" @click="selectFile" :title="t('json.actions.file')">
               <i class="mdi mdi-file-upload-outline"></i>
-              <span>文件</span>
+              <span>{{ t('json.actions.file') }}</span>
             </button>
             <input 
               ref="fileInput" 
@@ -89,7 +89,7 @@
           </div>
           <textarea 
             v-model="inputJson" 
-            placeholder="请输入 JSON 字符串，或拖拽文件到此处" 
+            :placeholder="t('json.placeholders.input')" 
             class="json-input"
             @input="handleInputChange"
             :class="{ 'drag-over': isDragOver, 'error': hasError }"
@@ -104,40 +104,40 @@
             v-if="errorLine" 
             class="error-location-btn" 
             @click="scrollToError"
-            title="跳转到错误位置"
+            :title="t('json.errors.jumpToLine', { line: errorLine })"
           >
             <i class="mdi mdi-crosshairs-gps"></i>
-            跳转到第 {{ errorLine }} 行
+            {{ t('json.errors.jumpToLine', { line: errorLine }) }}
           </button>
         </div>
         <div v-if="jsonStats" class="json-stats">
-          <span>字符数: {{ jsonStats.charCount }}</span>
-          <span>行数: {{ jsonStats.lineCount }}</span>
-          <span>深度: {{ jsonStats.maxDepth }}</span>
+          <span>{{ t('json.stats.characters') }}: {{ jsonStats.charCount }}</span>
+          <span>{{ t('json.stats.lines') }}: {{ jsonStats.lineCount }}</span>
+          <span>{{ t('json.stats.depth') }}: {{ jsonStats.maxDepth }}</span>
         </div>
       </div>
 
       <div class="output-panel">
         <div class="panel-header">
-          <h3>格式化结果</h3>
+          <h3>{{ t('json.labels.output') }}</h3>
           <div class="output-actions">
             <button 
               class="action-btn" 
               @click="downloadJson" 
-              title="下载 JSON"
+              :title="t('json.actions.download')"
               :disabled="!formattedJson"
             >
               <i class="mdi mdi-download-outline"></i>
-              <span>下载</span>
+              <span>{{ t('json.actions.download') }}</span>
             </button>
             <button 
               class="action-btn" 
               @click="copyResult" 
-              title="复制结果"
+              :title="t('json.actions.copy')"
               :disabled="!formattedJson"
             >
               <i class="mdi" :class="copySuccess ? 'mdi-check' : 'mdi-content-copy'"></i>
-              <span>{{ copySuccess ? '已复制' : '复制' }}</span>
+              <span>{{ copySuccess ? t('json.actions.copied') : t('json.actions.copy') }}</span>
             </button>
           </div>
         </div>
@@ -157,9 +157,9 @@
           ></pre>
         </div>
         <div v-if="outputStats" class="output-stats">
-          <span>字符数: {{ outputStats.charCount }}</span>
-          <span>行数: {{ outputStats.lineCount }}</span>
-          <span>压缩率: {{ outputStats.compressionRatio }}%</span>
+          <span>{{ t('json.stats.characters') }}: {{ outputStats.charCount }}</span>
+          <span>{{ t('json.stats.lines') }}: {{ outputStats.lineCount }}</span>
+          <span>{{ t('json.stats.compression') }}: {{ outputStats.compressionRatio }}%</span>
         </div>
       </div>
     </div>
@@ -178,6 +178,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 
 // 响应式数据
 const inputJson = ref('')
@@ -268,13 +272,13 @@ const validateJson = (json) => {
     }
 
     JSON.parse(json)
-    validationMessage.value = '有效的 JSON 格式'
+    validationMessage.value = t('json.validation.valid')
     validationStatus.value = true
     hasError.value = false
     errorLine.value = null
     return true
   } catch (e) {
-    validationMessage.value = `无效的 JSON: ${e.message}`
+    validationMessage.value = `${t('json.validation.invalid')}: ${e.message}`
     validationStatus.value = false
     hasError.value = true
     errorLine.value = findErrorLine(json, e.message)
@@ -376,17 +380,17 @@ const handleFileDrop = (event) => {
 
 const readFile = (file) => {
   if (file.size > 10 * 1024 * 1024) { // 10MB 限制
-    showToast('文件过大，请选择小于 10MB 的文件', 'error')
+    showToast(t('json.messages.fileSizeError'), 'error')
     return
   }
 
   const reader = new FileReader()
   reader.onload = (e) => {
     inputJson.value = e.target.result
-    showToast(`已加载文件: ${file.name}`)
+    showToast(`${t('json.messages.fileLoaded')}: ${file.name}`)
   }
   reader.onerror = () => {
-    showToast('文件读取失败', 'error')
+    showToast(t('json.messages.fileReadError'), 'error')
   }
   reader.readAsText(file)
 }
@@ -394,7 +398,7 @@ const readFile = (file) => {
 // 主要功能函数
 const formatJson = async () => {
   if (!inputJson.value.trim()) {
-    showToast('请先输入JSON数据', 'error')
+    showToast(t('json.messages.inputRequired'), 'error')
     return
   }
 
@@ -402,18 +406,18 @@ const formatJson = async () => {
     if (validateJson(inputJson.value)) {
       const obj = JSON.parse(inputJson.value)
       formattedJson.value = JSON.stringify(obj, null, 2)
-      showToast('JSON 格式化成功')
+      showToast(t('json.messages.formatSuccess'))
     } else {
-      showToast('JSON 格式无效，请检查输入', 'error')
+      showToast(t('json.messages.formatError'), 'error')
     }
   } catch (e) {
-    showToast(`格式化失败: ${e.message}`, 'error')
+    showToast(`${t('json.messages.formatError')}: ${e.message}`, 'error')
   }
 }
 
 const compressJson = async () => {
   if (!inputJson.value.trim()) {
-    showToast('请先输入JSON数据', 'error')
+    showToast(t('json.messages.inputRequired'), 'error')
     return
   }
 
@@ -421,51 +425,51 @@ const compressJson = async () => {
     if (validateJson(inputJson.value)) {
       const obj = JSON.parse(inputJson.value)
       formattedJson.value = JSON.stringify(obj)
-      showToast('JSON 压缩成功')
+      showToast(t('json.messages.compressSuccess'))
     } else {
-      showToast('JSON 格式无效，请检查输入', 'error')
+      showToast(t('json.messages.formatError'), 'error')
     }
   } catch (e) {
-    showToast(`压缩失败: ${e.message}`, 'error')
+    showToast(`${t('json.messages.compressError')}: ${e.message}`, 'error')
   }
 }
 
 const validateJsonOnly = async () => {
   if (!inputJson.value.trim()) {
-    showToast('请先输入JSON数据', 'error')
+    showToast(t('json.messages.inputRequired'), 'error')
     return
   }
 
   try {
     const isValid = validateJson(inputJson.value)
     if (isValid) {
-      showToast('JSON 格式有效')
+      showToast(t('json.messages.validateSuccess'))
     } else {
-      showToast('JSON 格式无效，请检查输入', 'error')
+      showToast(t('json.messages.formatError'), 'error')
     }
   } catch (e) {
-    showToast(`验证失败: ${e.message}`, 'error')
+    showToast(`${t('json.messages.validateError')}: ${e.message}`, 'error')
   }
 }
 
 const sortJson = async () => {
   if (!inputJson.value.trim()) {
-    showToast('请先输入JSON数据', 'error')
+    showToast(t('json.messages.inputRequired'), 'error')
     return
   }
 
   try {
     if (!validateJson(inputJson.value)) {
-      showToast('JSON 格式无效，无法排序', 'error')
+      showToast(t('json.messages.sortError'), 'error')
       return
     }
 
     const obj = JSON.parse(inputJson.value)
     const sortedObj = sortObjectKeys(obj)
     formattedJson.value = JSON.stringify(sortedObj, null, 2)
-    showToast('JSON 已排序')
+    showToast(t('json.messages.sortSuccess'))
   } catch (e) {
-    showToast(`排序失败: ${e.message}`, 'error')
+    showToast(`${t('json.messages.sortError')}: ${e.message}`, 'error')
   }
 }
 
@@ -488,20 +492,20 @@ const sortObjectKeys = (obj) => {
 
 const copyResult = async () => {
   if (!formattedJson.value) {
-    showToast('没有可复制的内容', 'error')
+    showToast(t('json.messages.noCopyContent'), 'error')
     return
   }
 
   try {
     await navigator.clipboard.writeText(formattedJson.value)
     copySuccess.value = true
-    showToast('已复制到剪贴板')
+    showToast(t('json.messages.copySuccess'))
 
     setTimeout(() => {
       copySuccess.value = false
     }, 2000)
   } catch (err) {
-    showToast('复制失败', 'error')
+    showToast(t('json.messages.copyError'), 'error')
   }
 }
 
@@ -511,7 +515,7 @@ const clearInput = () => {
   formattedJson.value = ''
   hasError.value = false
   errorLine.value = null
-  showToast('输入已清空')
+  showToast(t('json.messages.clearSuccess'))
 }
 
 const pasteFromClipboard = async () => {
@@ -526,22 +530,22 @@ const pasteFromClipboard = async () => {
         try {
           const obj = JSON.parse(text)
           formattedJson.value = JSON.stringify(obj, null, 2)
-          showToast('JSON 已自动格式化')
+          showToast(t('json.messages.pasteSuccess'))
         } catch (e) {
-          showToast('JSON 格式无效，请检查输入', 'error')
+          showToast(t('json.messages.formatError'), 'error')
         }
       } else {
-        showToast('JSON 格式无效，请检查输入', 'error')
+        showToast(t('json.messages.formatError'), 'error')
       }
     }
   } catch (err) {
-    showToast('无法从剪贴板读取内容', 'error')
+    showToast(t('json.messages.pasteError'), 'error')
   }
 }
 
 const downloadJson = () => {
   if (!formattedJson.value) {
-    showToast('没有可下载的内容', 'error')
+    showToast(t('json.messages.downloadError'), 'error')
     return
   }
 
@@ -554,7 +558,7 @@ const downloadJson = () => {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  showToast('JSON 文件已下载')
+  showToast(t('json.messages.downloadSuccess'))
 }
 
 const scrollToError = () => {

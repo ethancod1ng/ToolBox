@@ -8,27 +8,27 @@
         <div class="input-section">
           <div class="section-card">
             <div class="card-header">
-              <h2 class="card-title">时间戳转换</h2>
+              <h2 class="card-title">{{ t('timestamp.title') }}</h2>
             </div>
             <div class="card-body">
               <!-- 时间戳输入 -->
               <div class="input-block">
-                <div class="input-label">时间戳：</div>
+                <div class="input-label">{{ t('timestamp.labels.timestampInput') }}</div>
                 <div class="input-control">
                   <div class="timestamp-input-wrapper">
                     <input 
                       type="text" 
                       v-model="timestampInput" 
-                      placeholder="请输入时间戳" 
+                      :placeholder="t('timestamp.placeholders.timestamp')" 
                       @input="detectTimestampType"
                       class="text-input"
                       :class="{ 'error': timestampError }"
                     >
                     <div class="timestamp-actions">
-                      <button class="action-button" @click="useCurrentTimestamp" title="使用当前时间">
+                      <button class="action-button" @click="useCurrentTimestamp" :title="t('timestamp.actions.useCurrentTime')">
                         <i class="mdi mdi-clock-outline"></i>
                       </button>
-                      <button class="action-button" @click="clearTimestamp" title="清空">
+                      <button class="action-button" @click="clearTimestamp" :title="t('timestamp.actions.clearTimestamp')">
                         <i class="mdi mdi-close"></i>
                       </button>
                     </div>
@@ -37,11 +37,11 @@
                     <div class="timestamp-type-options">
                       <label class="radio-option">
                         <input type="radio" v-model="timestampType" value="seconds" @change="handleTimestampTypeChange">
-                        <span>秒级</span>
+                        <span>{{ t('timestamp.types.seconds') }}</span>
                       </label>
                       <label class="radio-option">
                         <input type="radio" v-model="timestampType" value="milliseconds" @change="handleTimestampTypeChange">
-                        <span>毫秒级</span>
+                        <span>{{ t('timestamp.types.milliseconds') }}</span>
                       </label>
                     </div>
                   </div>
@@ -53,7 +53,7 @@
 
               <!-- 日期时间输入区域 -->
               <div class="input-block">
-                <div class="input-label">日期时间：</div>
+                <div class="input-label">{{ t('timestamp.labels.datetimeInput') }}</div>
                 <div class="datetime-input-container">
                   <!-- 日期选择器 -->
                   <div class="date-picker-section">
@@ -62,40 +62,40 @@
                         <input 
                           type="number" 
                           v-model="dateComponents.year" 
-                          placeholder="年" 
+                          :placeholder="t('timestamp.placeholders.year')" 
                           @input="updateDateFromComponents"
                           class="date-input year"
                           :class="{ 'error': dateErrors.year }"
                           min="1970"
                           max="2100"
                         >
-                        <span class="date-separator">年</span>
+                        <span class="date-separator">{{ t('timestamp.inputSection.year') }}</span>
                       </div>
                       <div class="date-input-group">
                         <input 
                           type="number" 
                           v-model="dateComponents.month" 
-                          placeholder="月" 
+                          :placeholder="t('timestamp.placeholders.month')" 
                           @input="updateDateFromComponents"
                           class="date-input month"
                           :class="{ 'error': dateErrors.month }"
                           min="1"
                           max="12"
                         >
-                        <span class="date-separator">月</span>
+                        <span class="date-separator">{{ t('timestamp.inputSection.month') }}</span>
                       </div>
                       <div class="date-input-group">
                         <input 
                           type="number" 
                           v-model="dateComponents.day" 
-                          placeholder="日" 
+                          :placeholder="t('timestamp.placeholders.day')" 
                           @input="updateDateFromComponents"
                           class="date-input day"
                           :class="{ 'error': dateErrors.day }"
                           min="1"
                           max="31"
                         >
-                        <span class="date-separator">日</span>
+                        <span class="date-separator">{{ t('timestamp.inputSection.day') }}</span>
                       </div>
                     </div>
                   </div>
@@ -107,7 +107,7 @@
                         <input 
                           type="number" 
                           v-model="dateComponents.hour" 
-                          placeholder="时" 
+                          :placeholder="t('timestamp.placeholders.hour')" 
                           @input="updateDateFromComponents"
                           class="time-input hour"
                           :class="{ 'error': dateErrors.hour }"
@@ -120,7 +120,7 @@
                         <input 
                           type="number" 
                           v-model="dateComponents.minute" 
-                          placeholder="分" 
+                          :placeholder="t('timestamp.placeholders.minute')" 
                           @input="updateDateFromComponents"
                           class="time-input minute"
                           :class="{ 'error': dateErrors.minute }"
@@ -133,7 +133,7 @@
                         <input 
                           type="number" 
                           v-model="dateComponents.second" 
-                          placeholder="秒" 
+                          :placeholder="t('timestamp.placeholders.second')" 
                           @input="updateDateFromComponents"
                           class="time-input second"
                           :class="{ 'error': dateErrors.second }"
@@ -146,17 +146,17 @@
 
                   <!-- 快速操作按钮 -->
                   <div class="quick-actions">
-                    <button class="quick-btn" @click="setToNow" title="设置为当前时间">
+                    <button class="quick-btn" @click="setToNow" :title="t('timestamp.actions.setToNow')">
                       <i class="mdi mdi-clock-outline"></i>
-                      现在
+                      {{ t('timestamp.actions.setToNow') }}
                     </button>
-                    <button class="quick-btn" @click="setToToday" title="设置为今天">
+                    <button class="quick-btn" @click="setToToday" :title="t('timestamp.actions.setToToday')">
                       <i class="mdi mdi-calendar-today"></i>
-                      今天
+                      {{ t('timestamp.actions.setToToday') }}
                     </button>
-                    <button class="quick-btn" @click="clearDateTime" title="清空日期时间">
+                    <button class="quick-btn" @click="clearDateTime" :title="t('timestamp.actions.clearDateTime')">
                       <i class="mdi mdi-close"></i>
-                      清空
+                      {{ t('timestamp.actions.clearDateTime') }}
                     </button>
                   </div>
                 </div>
@@ -164,14 +164,14 @@
 
               <!-- 时区选择 -->
               <div class="input-block timezone-block">
-                <div class="input-label">时区：</div>
+                <div class="input-label">{{ t('timestamp.labels.timezoneSelect') }}</div>
                 <select v-model="selectedTimezone" @change="updateTimezoneInfo" class="timezone-select">
-                  <option value="Asia/Shanghai">中国标准时间 (UTC+8)</option>
-                  <option value="Asia/Tokyo">日本标准时间 (UTC+9)</option>
-                  <option value="Europe/London">格林威治标准时间 (UTC+0)</option>
-                  <option value="America/New_York">美国东部时间 (UTC-5)</option>
-                  <option value="Europe/Paris">中欧时间 (UTC+1)</option>
-                  <option value="UTC">协调世界时 (UTC)</option>
+                  <option value="Asia/Shanghai">{{ t('timestamp.timezones.Asia/Shanghai') }}</option>
+                  <option value="Asia/Tokyo">{{ t('timestamp.timezones.Asia/Tokyo') }}</option>
+                  <option value="Europe/London">{{ t('timestamp.timezones.Europe/London') }}</option>
+                  <option value="America/New_York">{{ t('timestamp.timezones.America/New_York') }}</option>
+                  <option value="Europe/Paris">{{ t('timestamp.timezones.Europe/Paris') }}</option>
+                  <option value="UTC">{{ t('timestamp.timezones.UTC') }}</option>
                 </select>
               </div>
             </div>
@@ -182,15 +182,15 @@
         <div class="result-section">
           <div class="section-card">
             <div class="card-header">
-              <h2 class="card-title">转换结果</h2>
+              <h2 class="card-title">{{ t('timestamp.result.title') }}</h2>
             </div>
             <div class="card-body">
               <!-- 秒级时间戳 -->
               <div class="result-block">
-                <div class="result-label">秒级时间戳：</div>
+                <div class="result-label">{{ t('timestamp.labels.secondsResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ secondsTimestamp || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(secondsTimestamp)" title="复制"
+                  <button class="copy-button" @click="copyToClipboard(secondsTimestamp)" :title="t('timestamp.copy')"
                     v-if="secondsTimestamp">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
@@ -199,10 +199,10 @@
 
               <!-- 毫秒级时间戳 -->
               <div class="result-block">
-                <div class="result-label">毫秒级时间戳：</div>
+                <div class="result-label">{{ t('timestamp.labels.millisecondsResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ millisecondsTimestamp || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(millisecondsTimestamp)" title="复制"
+                  <button class="copy-button" @click="copyToClipboard(millisecondsTimestamp)" :title="t('timestamp.copy')"
                     v-if="millisecondsTimestamp">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
@@ -211,7 +211,7 @@
 
               <!-- 当前时区 -->
               <div class="result-block">
-                <div class="result-label">当前时区：</div>
+                <div class="result-label">{{ t('timestamp.labels.currentTimezoneResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ currentTimezone }}</div>
                 </div>
@@ -219,10 +219,10 @@
 
               <!-- 格式化时间 -->
               <div class="result-block">
-                <div class="result-label">格式化时间：</div>
+                <div class="result-label">{{ t('timestamp.labels.formattedResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ formattedDate || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(formattedDate)" title="复制" v-if="formattedDate">
+                  <button class="copy-button" @click="copyToClipboard(formattedDate)" :title="t('timestamp.copy')" v-if="formattedDate">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
                 </div>
@@ -230,10 +230,10 @@
 
               <!-- ISO 格式 -->
               <div class="result-block">
-                <div class="result-label">ISO 格式：</div>
+                <div class="result-label">{{ t('timestamp.labels.isoResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ isoDate || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(isoDate)" title="复制" v-if="isoDate">
+                  <button class="copy-button" @click="copyToClipboard(isoDate)" :title="t('timestamp.copy')" v-if="isoDate">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
                 </div>
@@ -241,10 +241,10 @@
 
               <!-- UTC 时间 -->
               <div class="result-block">
-                <div class="result-label">UTC 时间：</div>
+                <div class="result-label">{{ t('timestamp.labels.utcResult') }}</div>
                 <div class="result-content">
                   <div class="result-text">{{ utcDate || '-' }}</div>
-                  <button class="copy-button" @click="copyToClipboard(utcDate)" title="复制" v-if="utcDate">
+                  <button class="copy-button" @click="copyToClipboard(utcDate)" :title="t('timestamp.copy')" v-if="utcDate">
                     <i class="mdi mdi-content-copy"></i>
                   </button>
                 </div>
@@ -269,6 +269,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t, locale } = useI18n()
 
 // 响应式数据
 const timestampInput = ref('')
@@ -342,7 +346,7 @@ const detectTimestampType = debounce(() => {
 
   const timestamp = Number(timestampInput.value)
   if (isNaN(timestamp)) {
-    timestampError.value = '请输入有效的数字时间戳'
+    timestampError.value = t('timestamp.errors.invalidTimestamp')
     return
   }
 
@@ -362,7 +366,7 @@ const convertTimestamp = () => {
 
   const timestamp = Number(timestampInput.value)
   if (isNaN(timestamp)) {
-    showToast('请输入有效的数字时间戳', 'error')
+    showToast(t('timestamp.errors.invalidTimestamp'), 'error')
     return
   }
 
@@ -377,7 +381,7 @@ const convertTimestamp = () => {
     updateDateFormats(date)
     updateDateComponents(date)
   } catch (e) {
-    showToast('时间戳转换失败，请检查输入', 'error')
+    showToast(t('timestamp.errors.timestampConvertFailed'), 'error')
   }
 }
 
@@ -450,7 +454,7 @@ const updateDateFromComponents = debounce(() => {
     updateDateFormats(date)
     timestampInput.value = secondsTimestamp.value.toString()
   } catch (e) {
-    showToast('日期无效，请检查输入', 'error')
+    showToast(t('timestamp.errors.dateInvalid'), 'error')
   }
 }, 300)
 
@@ -469,7 +473,9 @@ const updateDateComponents = (date) => {
 const updateTimezoneInfo = () => {
   const date = new Date()
   try {
-    currentTimezone.value = new Intl.DateTimeFormat('zh-CN', { 
+    // 根据当前语言环境动态设置时区名称显示
+    const currentLocale = locale.value || 'zh-CN'
+    currentTimezone.value = new Intl.DateTimeFormat(currentLocale, { 
       timeZone: selectedTimezone.value,
       timeZoneName: 'long' 
     }).formatToParts(date).find(part => part.type === 'timeZoneName')?.value || selectedTimezone.value
@@ -484,7 +490,8 @@ const updateDateFormats = (date) => {
   datetime.value = date.toISOString().slice(0, 16)
   
   try {
-    formattedDate.value = date.toLocaleString('zh-CN', {
+    const currentLocale = locale.value || 'zh-CN'
+    formattedDate.value = date.toLocaleString(currentLocale, {
       timeZone: selectedTimezone.value,
       year: 'numeric',
       month: '2-digit',
@@ -495,7 +502,8 @@ const updateDateFormats = (date) => {
       hour12: false
     })
   } catch (e) {
-    formattedDate.value = date.toLocaleString('zh-CN', {
+    const currentLocale = locale.value || 'zh-CN'
+    formattedDate.value = date.toLocaleString(currentLocale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -562,15 +570,15 @@ const clearDateTime = () => {
 
 const copyToClipboard = async (text) => {
   if (!text) {
-    showToast('没有可复制的内容', 'error')
+    showToast(t('timestamp.noContent'), 'error')
     return
   }
 
   try {
     await navigator.clipboard.writeText(text.toString())
-    showToast('已复制到剪贴板')
+    showToast(t('timestamp.copySuccess'))
   } catch (err) {
-    showToast('复制失败', 'error')
+    showToast(t('timestamp.copyFailed'), 'error')
   }
 }
 
@@ -581,6 +589,18 @@ watch(dateComponents, () => {
     validateDateComponent(key, dateComponents.value[key])
   })
 }, { deep: true })
+
+// 监听语言变化，更新时区显示
+watch(locale, () => {
+  updateTimezoneInfo()
+  // 如果有日期数据，重新格式化
+  if (secondsTimestamp.value || millisecondsTimestamp.value) {
+    const currentDate = secondsTimestamp.value 
+      ? new Date(secondsTimestamp.value * 1000)
+      : new Date(millisecondsTimestamp.value)
+    updateDateFormats(currentDate)
+  }
+})
 
 // 生命周期
 onMounted(() => {

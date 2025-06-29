@@ -1,8 +1,8 @@
 <template>
   <div class="converter">
     <div class="converter-header">
-      <h1>Base64 转换工具</h1>
-      <p>编码、解码和转换 Base64 数据</p>
+      <h1>{{ t('base64.title') }}</h1>
+      <p>{{ t('base64.subtitle') }}</p>
     </div>
 
     <div class="converter-actions">
@@ -13,7 +13,7 @@
         :class="{ 'disabled': isProcessing || !input.trim() }"
       >
         <i class="mdi mdi-arrow-down-bold-box-outline"></i> 
-        {{ isProcessing ? '处理中...' : '编码' }}
+        {{ isProcessing ? t('base64.actions.processing') : t('base64.actions.encode') }}
       </button>
       <button 
         class="main-btn" 
@@ -22,10 +22,10 @@
         :class="{ 'disabled': isProcessing || !input.trim() }"
       >
         <i class="mdi mdi-arrow-up-bold-box-outline"></i> 
-        {{ isProcessing ? '处理中...' : '解码' }}
+        {{ isProcessing ? t('base64.actions.processing') : t('base64.actions.decode') }}
       </button>
       <button class="main-btn" @click="clearAll">
-        <i class="mdi mdi-delete-outline"></i> 清空
+        <i class="mdi mdi-delete-outline"></i> {{ t('base64.actions.clear') }}
       </button>
       <button 
         class="main-btn" 
@@ -33,7 +33,7 @@
         :disabled="!input.trim() && !output.trim()"
         :class="{ 'disabled': !input.trim() && !output.trim() }"
       >
-        <i class="mdi mdi-swap-vertical"></i> 交换
+        <i class="mdi mdi-swap-vertical"></i> {{ t('base64.actions.swap') }}
       </button>
     </div>
 
@@ -46,19 +46,19 @@
         @dragleave.prevent
       >
         <div class="panel-header">
-          <h3>输入文本</h3>
+          <h3>{{ t('base64.labels.input') }}</h3>
           <div class="input-actions">
-            <button class="action-btn" @click="clearInput" title="清空输入">
+            <button class="action-btn" @click="clearInput" :title="t('base64.actions.clear')">
               <i class="mdi mdi-delete-outline"></i>
-              <span>清空</span>
+              <span>{{ t('base64.actions.clear') }}</span>
             </button>
-            <button class="action-btn" @click="pasteFromClipboard" title="从剪贴板粘贴">
+            <button class="action-btn" @click="pasteFromClipboard" :title="t('base64.actions.paste')">
               <i class="mdi mdi-clipboard-text-outline"></i>
-              <span>粘贴</span>
+              <span>{{ t('base64.actions.paste') }}</span>
             </button>
-            <button class="action-btn" @click="selectFile" title="选择文件">
+            <button class="action-btn" @click="selectFile" :title="t('base64.actions.file')">
               <i class="mdi mdi-file-upload-outline"></i>
-              <span>文件</span>
+              <span>{{ t('base64.actions.file') }}</span>
             </button>
             <input 
               ref="fileInput" 
@@ -71,47 +71,47 @@
         </div>
         <textarea 
           v-model="input" 
-          placeholder="请输入要转换的文本，或拖拽文件到此处" 
+          :placeholder="t('base64.placeholders.input')" 
           class="text-input"
           @input="handleInputChange"
           :class="{ 'drag-over': isDragOver }"
         ></textarea>
         <div v-if="inputStats" class="input-stats">
-          <span>字符数: {{ inputStats.charCount }}</span>
-          <span>字节数: {{ inputStats.byteCount }}</span>
-          <span>行数: {{ inputStats.lineCount }}</span>
+          <span>{{ t('base64.stats.characters') }}: {{ inputStats.charCount }}</span>
+          <span>{{ t('base64.stats.bytes') }}: {{ inputStats.byteCount }}</span>
+          <span>{{ t('base64.stats.lines') }}: {{ inputStats.lineCount }}</span>
         </div>
       </div>
 
       <div class="output-panel">
         <div class="panel-header">
-          <h3>转换结果</h3>
+          <h3>{{ t('base64.labels.output') }}</h3>
           <div class="output-actions">
             <button 
               class="action-btn" 
               @click="downloadResult" 
-              title="下载结果"
+              :title="t('base64.actions.download')"
               :disabled="!output.trim()"
             >
               <i class="mdi mdi-download-outline"></i>
-              <span>下载</span>
+              <span>{{ t('base64.actions.download') }}</span>
             </button>
             <button 
               class="action-btn" 
               @click="copyResult" 
-              title="复制结果"
+              :title="t('base64.actions.copy')"
               :disabled="!output.trim()"
             >
               <i class="mdi" :class="copySuccess ? 'mdi-check' : 'mdi-content-copy'"></i>
-              <span>{{ copySuccess ? '已复制' : '复制' }}</span>
+              <span>{{ copySuccess ? t('base64.actions.copied') : t('base64.actions.copy') }}</span>
             </button>
           </div>
         </div>
         <textarea v-model="output" readonly class="text-output"></textarea>
         <div v-if="outputStats" class="output-stats">
-          <span>字符数: {{ outputStats.charCount }}</span>
-          <span>字节数: {{ outputStats.byteCount }}</span>
-          <span>行数: {{ outputStats.lineCount }}</span>
+          <span>{{ t('base64.stats.characters') }}: {{ outputStats.charCount }}</span>
+          <span>{{ t('base64.stats.bytes') }}: {{ outputStats.byteCount }}</span>
+          <span>{{ t('base64.stats.lines') }}: {{ outputStats.lineCount }}</span>
         </div>
       </div>
     </div>
@@ -130,6 +130,10 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+// 国际化
+const { t } = useI18n()
 
 // 响应式数据
 const input = ref('')
@@ -188,9 +192,6 @@ const showToast = (message, type = 'success') => {
   }, 3000)
 }
 
-const setProcessing = (processing) => {
-  isProcessing.value = processing
-}
 
 // Base64 编码/解码函数
 const encodeBase64 = (str) => {
@@ -237,17 +238,17 @@ const handleFileDrop = (event) => {
 
 const readFile = (file) => {
   if (file.size > 10 * 1024 * 1024) { // 10MB 限制
-    showToast('文件过大，请选择小于 10MB 的文件', 'error')
+    showToast(t('base64.messages.fileSizeError'), 'error')
     return
   }
 
   const reader = new FileReader()
   reader.onload = (e) => {
     input.value = e.target.result
-    showToast(`已加载文件: ${file.name}`)
+    showToast(`${t('base64.messages.fileLoaded')}: ${file.name}`)
   }
   reader.onerror = () => {
-    showToast('文件读取失败', 'error')
+    showToast(t('base64.messages.fileReadError'), 'error')
   }
   reader.readAsText(file)
 }
@@ -255,60 +256,60 @@ const readFile = (file) => {
 // 主要功能函数
 const encode = async () => {
   if (!input.value.trim()) {
-    showToast('请先输入需要编码的文本', 'error')
+    showToast(t('base64.messages.inputRequired'), 'error')
     return
   }
   // 直接处理，无需loading
   try {
     output.value = encodeBase64(input.value)
-    showToast('Base64 编码成功')
+    showToast(t('base64.messages.encodeSuccess'))
   } catch (e) {
-    showToast(e.message, 'error')
+    showToast(t('base64.messages.encodeError'), 'error')
   }
 }
 
 const decode = async () => {
   if (!input.value.trim()) {
-    showToast('请先输入需要解码的 Base64 字符串', 'error')
+    showToast(t('base64.messages.decodeInputRequired'), 'error')
     return
   }
   // 直接处理，无需loading
   try {
     output.value = decodeBase64(input.value)
-    showToast('Base64 解码成功')
+    showToast(t('base64.messages.decodeSuccess'))
   } catch (e) {
-    showToast(e.message, 'error')
+    showToast(t('base64.messages.decodeError'), 'error')
   }
 }
 
 const copyResult = async () => {
   if (!output.value) {
-    showToast('没有可复制的内容', 'error')
+    showToast(t('base64.messages.noCopyContent'), 'error')
     return
   }
 
   try {
     await navigator.clipboard.writeText(output.value)
     copySuccess.value = true
-    showToast('已复制到剪贴板')
+    showToast(t('base64.messages.copySuccess'))
 
     setTimeout(() => {
       copySuccess.value = false
     }, 2000)
   } catch (e) {
-    showToast('复制失败', 'error')
+    showToast(t('base64.messages.copyError'), 'error')
   }
 }
 
 const clearInput = () => {
   input.value = ''
-  showToast('输入已清空')
+  showToast(t('base64.messages.clearSuccess'))
 }
 
 const clearAll = () => {
   input.value = ''
   output.value = ''
-  showToast('已清空所有内容')
+  showToast(t('base64.messages.clearAllSuccess'))
 }
 
 const swapTexts = () => {
@@ -316,7 +317,7 @@ const swapTexts = () => {
   input.value = output.value
   output.value = temp
   if (input.value && output.value) {
-    showToast('输入和输出内容已交换')
+    showToast(t('base64.messages.swapSuccess'))
   }
 }
 
@@ -324,15 +325,15 @@ const pasteFromClipboard = async () => {
   try {
     const text = await navigator.clipboard.readText()
     input.value = text
-    showToast('已从剪贴板粘贴')
+    showToast(t('base64.messages.pasteSuccess'))
   } catch (err) {
-    showToast('无法从剪贴板读取内容', 'error')
+    showToast(t('base64.messages.pasteError'), 'error')
   }
 }
 
 const downloadResult = () => {
   if (!output.value) {
-    showToast('没有可下载的内容', 'error')
+    showToast(t('base64.messages.downloadError'), 'error')
     return
   }
 
@@ -345,7 +346,7 @@ const downloadResult = () => {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  showToast('文件已下载')
+  showToast(t('base64.messages.downloadSuccess'))
 }
 
 // 输入变化处理（防抖）
